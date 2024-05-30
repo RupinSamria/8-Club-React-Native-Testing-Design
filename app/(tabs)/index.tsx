@@ -7,6 +7,8 @@ import {
   Button,
   Dimensions,
   TouchableWithoutFeedback,
+  FlatList,
+  ScrollView,
 } from "react-native";
 
 import { HelloWave } from "@/components/HelloWave";
@@ -16,7 +18,6 @@ import { ThemedView } from "@/components/ThemedView";
 import { ThemedCard } from "@/components/ThemedCard";
 import { ProgressBar } from "@/components/ProgressBar";
 import { useColorScheme } from "@/hooks/useColorScheme.web";
-import { LinearGradient } from "expo-linear-gradient";
 import { Divider } from "react-native-paper";
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import { Demo } from "@/components/CanvasRadialGradient";
@@ -27,45 +28,49 @@ import {
   Rect,
   vec,
 } from "@shopify/react-native-skia";
+import TypeSlide from "@/components/hotspotslides/TypeSlide";
+import { useState } from "react";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  useAnimatedScrollHandler,
+  interpolate,
+} from "react-native-reanimated";
 
 export default function HomeScreen() {
   const theme = useColorScheme();
+
+  const { width, height } = Dimensions.get("window");
+  const SIZE = width * 0.85;
+  const SPACER = (width - SIZE) / 2;
+
   const data = [
     {
-      icon: require("@/assets/images/brunchIcon.png"),
+      icon: require("@/assets/images/Image1.png"),
       text: "Brunch",
     },
     {
-      icon: require("@/assets/images/dinnerIcon.png"),
+      icon: require("@/assets/images/Image2.png"),
       text: "Dinner",
     },
     {
-      icon: require("@/assets/images/dinnerIcon.png"),
+      icon: require("@/assets/images/Image3.png"),
       text: "Beer Walk",
     },
-    {
-      icon: require("@/assets/images/dinnerIcon.png"),
-      text: "House Party",
-    },
-    {
-      icon: require("@/assets/images/dinnerIcon.png"),
-      text: "Clubbing",
-    },
-    {
-      icon: require("@/assets/images/dinnerIcon.png"),
-      text: "Art Sesh",
-    },
-    {
-      icon: require("@/assets/images/dinnerIcon.png"),
-      text: "Wine Tasting",
-    },
-    {
-      icon: require("@/assets/images/dinnerIcon.png"),
-      text: "Pool Party",
-    },
   ];
-  const { width, height } = Dimensions.get("window");
 
+  const [newData] = useState([
+    { key: "spacer-left" },
+    ...data,
+    { key: "spacer-right" },
+  ]);
+
+  const x = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      x.value = e.contentOffset.x;
+    },
+  });
   // exclusion, softLight, screen, plus
   return (
     <SafeAreaView
@@ -90,59 +95,57 @@ export default function HomeScreen() {
           </Blend>
         </Rect>
       </Canvas>
-      <ProgressBar />
-      <ThemedCard
-        style={{ position: "absolute", top: width / 2, padding: 0 }}
-        content={
-          <View
-            style={{
-              flexGrow: 1,
-              backgroundColor: "rgba(0, 0, 0, 0)",
-            }}
-          >
-            <ThemedText
-              style={{ margin: 20, fontSize: 30, fontFamily: "Trap" }}
-            >
-              Type of hotspot:
-            </ThemedText>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-              {data.map((a, b) => (
-                <View
-                  key={b}
-                  style={{
-                    width: "45%",
-                    padding: 20,
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                    gap: 10,
-                    borderRadius: 5,
-                  }}
+      {/* <ProgressBar /> */}
+      <View
+        style={{
+          position: "absolute",
+          zIndex: 2,
+          height: "100%",
+        }}
+      >
+        <Animated.ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          bounces={false}
+          scrollEventThrottle={16}
+          snapToInterval={SIZE}
+          decelerationRate="fast"
+          onScroll={onScroll}
+          // contentContainerStyle={{ backgroundColor: "rgba(0, 0, 0, 0)" }}
+        >
+          {newData.map((item, index) => {
+            const style = useAnimatedStyle(() => {
+              const scale = interpolate(
+                x.value,
+                [(index - 2) * SIZE, (index - 1) * SIZE, index * SIZE],
+                [0.8, 1, 0.8]
+              );
+              return {
+                transform: [{ scale }],
+              };
+            });
+            if (!item.icon) {
+              return <View style={{ width: SPACER / 2 }} key={index} />;
+            }
+            return (
+              <View style={{ width: SIZE }} key={index}>
+                <Animated.View
+                  style={[
+                    styles.carouselItemContainer,
+                    style,
+                    // { backgroundColor: "red" },
+                  ]}
                 >
-                  <Image style={{ width: 20 }} source={a.icon} />
-                  <ThemedText style={{ fontFamily: "SpaceGrotesk" }}>
-                    {a.text}
-                  </ThemedText>
-                </View>
-              ))}
-            </View>
-            <Divider />
-            <View style={{ flexDirection: "row" }}>
-              <ThemedText style={{ width: "80%", color: "rgba(0, 0, 0, 1)" }}>
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-              </ThemedText>
-              <TouchableWithoutFeedback onPress={() => {}}>
-                <View style={styles.buttonContainer}>
-                  {/* <FontAwesomeIcon icon="fa-solid fa-arrow-right" />
-                  <FontAwesomeIcon icon={faArrowRight} /> */}
-                  {/* <Image source={require("@/assets/images/ArrowIcon.png")} /> */}
-                </View>
-              </TouchableWithoutFeedback>
-            </View>
-          </View>
-        }
-      />
-      <ThemedText darkColor="true" type="subtitle" style={styles.stepContainer}>
+                  <TypeSlide style={styles.carouselImageContainer} />
+                </Animated.View>
+              </View>
+            );
+          })}
+        </Animated.ScrollView>
+      </View>
+      {/* <ThemedText darkColor="true" type="subtitle" style={styles.stepContainer}>
         Step 1/4
-      </ThemedText>
+      </ThemedText> */}
     </SafeAreaView>
   );
 }
@@ -159,16 +162,14 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 8,
   },
-  buttonContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 100,
+  carouselItemContainer: {
+    overflow: "hidden",
+    height: "100%",
+    width: "80%",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
+  carouselImageContainer: {
+    width: "100%",
+    height: undefined,
+    // aspectRatio: 1,
   },
 });

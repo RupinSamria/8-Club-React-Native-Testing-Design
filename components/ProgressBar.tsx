@@ -21,13 +21,15 @@ export function ProgressBar({
 
   return (
     <View
-      style={{
-        paddingStart: 100,
-        backgroundColor: "rgba(0, 0, 0, 0)",
-        position: "relative",
-      }}
+      style={[
+        {
+          backgroundColor: "rgba(0, 0, 0, 0)",
+          position: "absolute",
+        },
+        style,
+      ]}
     >
-      <Text>gdycehwid</Text>
+      <Text style={{ color: "#fff", paddingVertical: 50 }}>gdycehwid</Text>
     </View>
   );
 }

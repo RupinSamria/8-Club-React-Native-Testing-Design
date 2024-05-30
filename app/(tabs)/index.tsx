@@ -1,26 +1,5 @@
-import {
-  Image,
-  StyleSheet,
-  Platform,
-  SafeAreaView,
-  View,
-  Button,
-  Dimensions,
-  TouchableWithoutFeedback,
-  FlatList,
-  ScrollView,
-} from "react-native";
-
-import { HelloWave } from "@/components/HelloWave";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { ThemedCard } from "@/components/ThemedCard";
-import { ProgressBar } from "@/components/ProgressBar";
-import { useColorScheme } from "@/hooks/useColorScheme.web";
-import { Divider } from "react-native-paper";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { Demo } from "@/components/CanvasRadialGradient";
+import { useState } from "react";
+import { StyleSheet, SafeAreaView, View, Dimensions } from "react-native";
 import {
   Blend,
   Canvas,
@@ -28,14 +7,16 @@ import {
   Rect,
   vec,
 } from "@shopify/react-native-skia";
-import TypeSlide from "@/components/hotspotslides/TypeSlide";
-import { useState } from "react";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   useAnimatedScrollHandler,
   interpolate,
 } from "react-native-reanimated";
+import { ThemedText } from "@/components/ThemedText";
+import { useColorScheme } from "@/hooks/useColorScheme.web";
+import TypeSlide from "@/components/hotspotslides/TypeSlide";
+import WhereSlide from "@/components/hotspotslides/WhereSlide";
 
 export default function HomeScreen() {
   const theme = useColorScheme();
@@ -45,18 +26,9 @@ export default function HomeScreen() {
   const SPACER = (width - SIZE) / 2;
 
   const data = [
-    {
-      icon: require("@/assets/images/Image1.png"),
-      text: "Brunch",
-    },
-    {
-      icon: require("@/assets/images/Image2.png"),
-      text: "Dinner",
-    },
-    {
-      icon: require("@/assets/images/Image3.png"),
-      text: "Beer Walk",
-    },
+    { component: <TypeSlide /> },
+    { component: <WhereSlide /> },
+    { component: <TypeSlide /> },
   ];
 
   const [newData] = useState([
@@ -71,7 +43,7 @@ export default function HomeScreen() {
       x.value = e.contentOffset.x;
     },
   });
-  // exclusion, softLight, screen, plus
+
   return (
     <SafeAreaView
       style={{
@@ -79,6 +51,7 @@ export default function HomeScreen() {
         backgroundColor: "rgba(0, 0, 0, 0)",
       }}
     >
+      {/* some useful Blend modes I explored: exclusion, softLight, screen, plus */}
       <Canvas style={{ flex: 1 }}>
         <Rect x={0} y={0} width={width} height={height}>
           <Blend mode="exclusion">
@@ -124,28 +97,22 @@ export default function HomeScreen() {
                 transform: [{ scale }],
               };
             });
-            if (!item.icon) {
+            if (!item.component) {
               return <View style={{ width: SPACER / 2 }} key={index} />;
             }
             return (
               <View style={{ width: SIZE }} key={index}>
-                <Animated.View
-                  style={[
-                    styles.carouselItemContainer,
-                    style,
-                    // { backgroundColor: "red" },
-                  ]}
-                >
-                  <TypeSlide style={styles.carouselImageContainer} />
+                <Animated.View style={[styles.carouselItemContainer, style]}>
+                  {item.component}
                 </Animated.View>
               </View>
             );
           })}
         </Animated.ScrollView>
       </View>
-      {/* <ThemedText darkColor="true" type="subtitle" style={styles.stepContainer}>
+      <ThemedText darkColor="true" type="subtitle" style={styles.stepContainer}>
         Step 1/4
-      </ThemedText> */}
+      </ThemedText>
     </SafeAreaView>
   );
 }
@@ -165,11 +132,9 @@ const styles = StyleSheet.create({
   carouselItemContainer: {
     overflow: "hidden",
     height: "100%",
-    width: "80%",
   },
   carouselImageContainer: {
     width: "100%",
     height: undefined,
-    // aspectRatio: 1,
   },
 });

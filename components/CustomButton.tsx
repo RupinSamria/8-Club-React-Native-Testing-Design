@@ -1,4 +1,3 @@
-import { Container } from "@shopify/react-native-skia/lib/typescript/src/renderer/Container";
 import React from "react";
 import {
   TouchableWithoutFeedback,
